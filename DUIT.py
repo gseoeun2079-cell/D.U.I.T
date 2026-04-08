@@ -65,7 +65,7 @@ if menu == "📅 학사 일정 & 급식":
     st.subheader("📅 날짜별 정보")
 
     search_date = st.date_input("날짜 선택")
-    search_date = str(search_date)
+    search_date_str = search_date.strftime("%Y-%m-%d")
 
     col1, col2 = st.columns(2)
 
