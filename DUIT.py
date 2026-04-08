@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 from datetime import datetime
+import pandas as pd
 
 # 페이지 디자인
 st.set_page_config(
@@ -25,15 +26,6 @@ def save_data(data):
 
 
 # 데이터
-schedules = {
-    "2026-04-23": ["중간고사 시작"]
-}
-
-meals = {
-    "2026-04-06": "발아현미밥, 어묵탕, 멸치볶음, 함박스테이크",
-    "2026-04-07": "기장밥, 콩나물국, 오리불고기, 김치"
-}
-
 timetable = {
     '월': ['기초', 'A', '문학A', 'B', '영듣', 'C', '대수'],
     '화': ['영어', 'D', '대수', 'A', '기초', '문학B', '특색'],
@@ -61,30 +53,44 @@ menu = st.sidebar.radio(
 )
 
 # 1️⃣ 학사 일정 & 급식
-if menu == "📅 학사 일정 & 급식":
-    st.subheader("📅 날짜별 정보")
+sheet_url = "https://docs.google.com/spreadsheets/d/14b1ZOcAatDx8gP-vFzktP45zHS2A3jR9FuOKKPMVhlM/edit?usp=drivesdk"
 
-    search_date = st.date_input("날짜 선택", value=datetime(2026, 4, 6))
-    search_date_str = search_date.strftime("%Y-%m-%d")
-    
-    st.write("선택:", search_date_str)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("### 📌 학사 일정")
-        data = schedules.get(search_date_str)
-        if data:
-            for s in data:
-                st.info(s)
-        else:
+# 데이터 불러오기
+df = pd.read_csv(sheet_url)
+
+# 날짜 선택
+search_date = st.date_input("날짜 선택")
+search_date_str = search_date.strftime("%Y-%m-%d")
+
+col1, col2 = st.columns(2)
+
+# 📌 학사 일정
+with col1:
+    st.markdown("### 📌 학사 일정")
+
+    row = df[df["날짜"] == search_date_str]
+
+    if not row.empty:
+        schedule = row["학사일정"].values[0]
+        if schedule == "없음":
             st.info("일정 없음")
-    with col2:
-        st.markdown("### 🍱 급식 메뉴")
-        meal = meals.get(search_date_str)
-        if meal:
-            st.success(meal)
         else:
+            st.info(schedule)
+    else:
+        st.info("일정 없음")
+
+# 🍱 급식 메뉴
+with col2:
+    st.markdown("### 🍱 급식 메뉴")
+
+    if not row.empty:
+        meal = row["급식"].values[0]
+        if meal == "급식 없음":
             st.success("급식 정보 없음")
+        else:
+            st.success(meal)
+    else:
+        st.success("급식 정보 없음")
 # 2️⃣ 시간표
 elif menu == "🏫 시간표":
     st.subheader("🏫 시간표")
