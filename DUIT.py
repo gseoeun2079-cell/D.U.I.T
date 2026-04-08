@@ -79,7 +79,7 @@ if menu == "📅 학사 일정 & 급식":
         st.markdown("### 📌 학사 일정")
 
         if "날짜" in df.columns and "학사일정" in df.columns:
-            row = df[df["날짜"] == search_date_str]
+            row = df[df["날짜"] == search_date]
 
             if not row.empty:
                 schedule = row["학사일정"].values[0]
