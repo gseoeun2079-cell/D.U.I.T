@@ -61,22 +61,18 @@ if menu == "📅 학사 일정 & 급식":
 
     try:
         df = pd.read_csv(sheet_url)
-
-        # ✅ 컬럼 공백 제거
         df.columns = df.columns.str.strip()
-
     except:
         st.error("구글 시트를 불러올 수 없습니다.")
         st.stop()
-        
-        # 날짜 변환
-        df["날짜"] = pd.to_datetime(df["날짜"], errors="coerce")
-        
-        # 날짜 선택
-        search_date = st.date_input("날짜 선택")
-        search_date = pd.to_datetime(search_date)
 
-        col1, col2 = st.columns(2)
+    # ✅ 여기로 빼야 함
+    df["날짜"] = pd.to_datetime(df["날짜"], errors="coerce")
+
+    search_date = st.date_input("날짜 선택")
+    search_date = pd.to_datetime(search_date)
+    
+    col1, col2 = st.columns(2)
 
     # 📌 학사 일정
     with col1:
@@ -101,7 +97,7 @@ if menu == "📅 학사 일정 & 급식":
         st.markdown("### 🍱 급식 메뉴")
 
         if "날짜" in df.columns and "급식" in df.columns:
-            row = df[df["날짜"] == search_date_str]
+            row = df[df["날짜"] == search_date]
 
             if not row.empty:
                 meal = row["급식"].values[0]
