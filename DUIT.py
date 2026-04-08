@@ -125,21 +125,89 @@ elif menu == "🏫 시간표":
 # 3️⃣ 수행평가
 # =========================
 elif menu == "📝 수행평가":
-    st.subheader("📝 수행평가 D-Day")
+    st.subheader("📝 수행평가 관리")
 
-    today = datetime.now()
+    tasks = load_data()
 
-    for subject, deadline in homeworks.items():
-        target = datetime.strptime(deadline, "%Y-%m-%d")
-        d_day = (target - today).days + 1
+    # 📅 기준 날짜 선택
+    selected_date = st.date_input("기준 날짜 선택")
+    selected_date = datetime.combine(selected_date, datetime.min.time())
 
-        if d_day > 0:
-            st.warning(f"{subject} → D-{d_day}")
-        elif d_day == 0:
-            st.error(f"{subject} → 오늘 마감!")
-        else:
-            st.success(f"{subject} → 완료됨")
+    # ➕ 수행평가 추가
+    with st.expander("➕ 수행평가 추가"):
+        subject = st.text_input("과목 / 수행평가 이름")
+        deadline = st.date_input("마감일")
 
+        if st.button("추가"):
+            if subject:
+                tasks.append({
+                    "task": subject,
+                    "deadline": str(deadline),
+                    "done": False
+                })
+                save_data(tasks)
+                st.success("추가 완료!")
+                st.rerun()
+
+    st.markdown("### 📅 수행평가 캘린더")
+
+    # 수행평가만 필터링
+    hw_tasks = [t for t in tasks if "deadline" in t]
+
+    if not hw_tasks:
+        st.info("등록된 수행평가가 없습니다.")
+    else:
+        # 🔥 날짜 기준 정렬
+        hw_tasks.sort(key=lambda x: x["deadline"])
+
+        current_date = None
+
+        for i, t in enumerate(hw_tasks):
+            deadline_date = datetime.strptime(t["deadline"], "%Y-%m-%d")
+            d_day = (deadline_date - selected_date).days
+
+            # 📌 날짜 바뀌면 구분선 (캘린더 느낌)
+            if current_date != t["deadline"]:
+                st.markdown(f"## 📆 {t['deadline']}")
+                current_date = t["deadline"]
+
+            col1, col2, col3 = st.columns([4,1,1])
+
+            # 📌 내용 표시
+            with col1:
+                if t["done"]:
+                    st.write(f"~~{t['task']}~~ ✅")
+                else:
+                    # 🔥 D-3 이하 강조
+                    if d_day <= 3 and d_day > 0:
+                        st.error(f"🔥 {t['task']} → D-{d_day}")
+                    elif d_day == 0:
+                        st.error(f"🚨 {t['task']} → 오늘 마감!")
+                    elif d_day < 0:
+                        st.success(f"{t['task']} → 기한 지남")
+                    else:
+                        st.warning(f"{t['task']} → D-{d_day}")
+
+            # ✅ 완료 버튼
+            with col2:
+                if not t["done"]:
+                    if st.button("완료", key=f"done_{i}"):
+                        for j in range(len(tasks)):
+                            if tasks[j].get("task") == t["task"] and tasks[j].get("deadline") == t["deadline"]:
+                                tasks[j]["done"] = True
+                                break
+                        save_data(tasks)
+                        st.rerun()
+
+            # ❌ 삭제 버튼
+            with col3:
+                if st.button("삭제", key=f"del_{i}"):
+                    for j in range(len(tasks)):
+                        if tasks[j].get("task") == t["task"] and tasks[j].get("deadline") == t["deadline"]:
+                            tasks.pop(j)
+                            break
+                    save_data(tasks)
+                    st.rerun()
 # =========================
 # 4️⃣ 스터디 플래너
 # =========================
