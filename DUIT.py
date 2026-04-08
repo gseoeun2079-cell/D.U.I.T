@@ -222,94 +222,95 @@ elif menu == "📝 수행평가":
 # =========================
 # 📋 스터디 플래너
 # =========================
-elif menu == "📋 스터디 플래너":
-    st.subheader("📋 공부 계획 관리")
+from streamlit_autorefresh import st_autorefresh
 
-    tasks = load_data()
+st.subheader("📋 공부 계획 관리")
 
-    # ➕ 할 일 추가
-    with st.expander("➕ 할 일 추가"):
-        with st.form("plan_form"):
-            task = st.text_input("할 일")
-            priority = st.slider("우선순위", 1, 3, 2)
+tasks = load_data()
 
-            submitted = st.form_submit_button("추가")
+# ➕ 할 일 추가
+with st.expander("➕ 할 일 추가"):
+    with st.form("plan_form"):
+        task = st.text_input("할 일")
+        priority = st.slider("우선순위", 1, 3, 2)
 
-            if submitted and task:
-                tasks.append({
-                    "task": task,
-                    "priority": priority,
-                    "done": False,
-                    "timer_running": False,
-                    "start_time": None
-                })
+        submitted = st.form_submit_button("추가")
+
+        if submitted and task:
+            tasks.append({
+                "task": task,
+                "priority": priority,
+                "done": False,
+                "timer_running": False,
+                "start_time": None
+            })
+            save_data(tasks)
+            st.rerun()
+
+st.markdown("### 📌 할 일 목록")
+
+for i, t in enumerate(tasks):
+    if "priority" not in t:
+        continue
+
+    col1, col2, col3, col4 = st.columns([3,1,1,2])
+
+    # 할 일
+    with col1:
+        if t["done"]:
+            st.write(f"~~{t['task']}~~ ✅")
+        else:
+            st.write(f"{t['task']} (⭐{t['priority']})")
+
+    # 완료
+    with col2:
+        if not t["done"]:
+            if st.button("완료", key=f"done_{i}"):
+                tasks[i]["done"] = True
                 save_data(tasks)
                 st.rerun()
 
-    st.markdown("### 📌 할 일 목록")
+    # 삭제
+    with col3:
+        if st.button("삭제", key=f"del_{i}"):
+            tasks.pop(i)
+            save_data(tasks)
+            st.rerun()
 
-    for i, t in enumerate(tasks):
-        if "priority" not in t:
-            continue
-
-        col1, col2, col3, col4 = st.columns([3,1,1,2])
-
-        # 할 일
-        with col1:
-            if t["done"]:
-                st.write(f"~~{t['task']}~~ ✅")
-            else:
-                st.write(f"{t['task']} (⭐{t['priority']})")
-
-        # 완료
-        with col2:
-            if not t["done"]:
-                if st.button("완료", key=f"done_{i}"):
-                    tasks[i]["done"] = True
-                    save_data(tasks)
-                    st.rerun()
-
-        # 삭제
-        with col3:
-            if st.button("삭제", key=f"del_{i}"):
-                tasks.pop(i)
+    # 타이머
+    with col4:
+        if not t.get("timer_running", False):
+            if st.button("▶ 시작", key=f"start_{i}"):
+                tasks[i]["timer_running"] = True
+                tasks[i]["start_time"] = str(datetime.now())
+                save_data(tasks)
+                st.rerun()
+        else:
+            if st.button("⏹ 정지", key=f"stop_{i}"):
+                tasks[i]["timer_running"] = False
                 save_data(tasks)
                 st.rerun()
 
-        # 타이머
-        with col4:
-            if not t.get("timer_running", False):
-                if st.button("▶ 시작", key=f"start_{i}"):
-                    tasks[i]["timer_running"] = True
-                    tasks[i]["start_time"] = str(datetime.now())
-                    save_data(tasks)
-                    st.rerun()
-            else:
-                if st.button("⏹ 정지", key=f"stop_{i}"):
-                    tasks[i]["timer_running"] = False
-                    save_data(tasks)
-                    st.rerun()
+    # ⏱ 타이머 표시 + 자동 갱신
+    if t.get("timer_running") and t.get("start_time"):
 
-        # 타이머 표시
-        if t.get("timer_running") and t.get("start_time"):
-            start_time = datetime.strptime(t["start_time"], "%Y-%m-%d %H:%M:%S.%f")
-            elapsed = (datetime.now() - start_time).seconds
-            mins, secs = divmod(elapsed, 60)
-            
-            st.info(f"⏱ {t['task']} → {mins:02d}:{secs:02d}")
-            
-            if st.button("🔄 새로고침", key=f"refresh_{i}"):
-                
-                st.rerun()
+        # 👉 실행 중일 때만 자동 새로고침
+        st_autorefresh(interval=1000, key=f"timer_{i}")
 
-    # 진행률
-    done = sum(1 for t in tasks if t.get("done"))
-    total = len([t for t in tasks if "priority" in t])
+        start_time = datetime.strptime(t["start_time"], "%Y-%m-%d %H:%M:%S.%f")
+        elapsed = (datetime.now() - start_time).seconds
+        mins, secs = divmod(elapsed, 60)
 
-    st.markdown("### 📊 진행률")
+        st.info(f"⏱ {t['task']} → {mins:02d}:{secs:02d}")
 
-    if total == 0:
-        st.info("아직 할 일이 없습니다.")
-    else:
-        st.progress(done / total)
-        st.write(f"{done} / {total} 완료")
+# 진행률
+done = sum(1 for t in tasks if t.get("done"))
+total = len([t for t in tasks if "priority" in t])
+
+st.markdown("### 📊 진행률")
+
+if total == 0:
+    st.info("아직 할 일이 없습니다.")
+else:
+    st.progress(done / total)
+    st.write(f"{done} / {total} 완료")
