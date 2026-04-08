@@ -64,20 +64,27 @@ menu = st.sidebar.radio(
 if menu == "📅 학사 일정 & 급식":
     st.subheader("📅 날짜별 정보")
 
-    search_date = st.date_input("날짜 선택")
+    search_date = st.date_input("날짜 선택", value=datetime(2026, 4, 6))
     search_date_str = search_date.strftime("%Y-%m-%d")
-
+    
+    st.write("선택:", search_date_str)
+    
     col1, col2 = st.columns(2)
-
     with col1:
         st.markdown("### 📌 학사 일정")
-        for s in schedules.get(search_date, ["일정 없음"]):
-            st.info(s)
-
+        data = schedules.get(search_date_str)
+        if data:
+            for s in data:
+                st.info(s)
+        else:
+            st.info("일정 없음")
     with col2:
         st.markdown("### 🍱 급식 메뉴")
-        st.success(meals.get(search_date, "급식 정보 없음"))
-
+        meal = meals.get(search_date_str)
+        if meal:
+            st.success(meal)
+        else:
+            st.success("급식 정보 없음")
 # 2️⃣ 시간표
 elif menu == "🏫 시간표":
     st.subheader("🏫 시간표")
