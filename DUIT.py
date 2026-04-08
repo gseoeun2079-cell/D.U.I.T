@@ -142,22 +142,22 @@ elif menu == "📝 수행평가":
 
     # ➕ 수행평가 추가
     with st.expander("➕ 수행평가 추가"):
-    subject = st.text_input("과목 / 수행평가 이름", key="subject_input")
-    deadline = st.date_input("마감일", key="deadline_input")
-
-    if st.button("추가"):
-        if subject:
-            tasks.append({
+        subject = st.text_input("과목 / 수행평가 이름", key="subject_input")
+        deadline = st.date_input("마감일", key="deadline_input")
+        
+        if st.button("추가"):
+            if subject:
+                tasks.append({
                 "task": subject,
                 "deadline": str(deadline),
                 "done": False
-            })
-            save_data(tasks)
-
-            st.session_state.subject_input = ""
-            st.session_state.deadline_input = datetime.today()
-
-            st.rerun()
+                })
+                save_data(tasks)
+                
+                st.session_state.subject_input = ""
+                st.session_state.deadline_input = datetime.today()
+                
+                st.rerun()
 
     st.markdown("### 📅 수행평가 캘린더")
 
