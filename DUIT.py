@@ -133,10 +133,17 @@ elif menu == "📝 수행평가":
     selected_date = st.date_input("기준 날짜 선택")
     selected_date = datetime.combine(selected_date, datetime.min.time())
 
+    # 👉 session_state 초기화
+    if "subject_input" not in st.session_state:
+        st.session_state.subject_input = ""
+
+    if "deadline_input" not in st.session_state:
+        st.session_state.deadline_input = datetime.today()
+
     # ➕ 수행평가 추가
     with st.expander("➕ 수행평가 추가"):
-        subject = st.text_input("과목 / 수행평가 이름")
-        deadline = st.date_input("마감일")
+        subject = st.text_input("과목 / 수행평가 이름", key="subject_input")
+        deadline = st.date_input("마감일", key="deadline_input")
 
         if st.button("추가"):
             if subject:
@@ -146,19 +153,28 @@ elif menu == "📝 수행평가":
                     "done": False
                 })
                 save_data(tasks)
+
+                # 입력창 초기화
+                st.session_state.subject_input = ""
+                st.session_state.deadline_input = datetime.today()
+
                 st.success("추가 완료!")
                 st.rerun()
 
     st.markdown("### 📅 수행평가 캘린더")
 
-    # 수행평가만 필터링
     hw_tasks = [t for t in tasks if "deadline" in t]
 
     if not hw_tasks:
         st.info("등록된 수행평가가 없습니다.")
     else:
-        # 🔥 날짜 기준 정렬
-        hw_tasks.sort(key=lambda x: x["deadline"])
+        # 🔥 완료 여부 + 날짜 기준 정렬
+        hw_tasks.sort(
+            key=lambda x: (
+                x["done"],  # False(미완료) 먼저
+                datetime.strptime(x["deadline"], "%Y-%m-%d")
+            )
+        )
 
         current_date = None
 
@@ -166,19 +182,16 @@ elif menu == "📝 수행평가":
             deadline_date = datetime.strptime(t["deadline"], "%Y-%m-%d")
             d_day = (deadline_date - selected_date).days
 
-            # 📌 날짜 바뀌면 구분선 (캘린더 느낌)
             if current_date != t["deadline"]:
                 st.markdown(f"## 📆 {t['deadline']}")
                 current_date = t["deadline"]
 
-            col1, col2, col3 = st.columns([4,1,1])
+            col1, col2, col3 = st.columns([6,1,1])
 
-            # 📌 내용 표시
             with col1:
                 if t["done"]:
-                    st.write(f"~~{t['task']}~~ ✅")
+                    st.write(f"~~{t['task']}~~ ✅ (완료)")
                 else:
-                    # 🔥 D-3 이하 강조
                     if d_day <= 3 and d_day > 0:
                         st.error(f"🔥 {t['task']} → D-{d_day}")
                     elif d_day == 0:
@@ -188,7 +201,6 @@ elif menu == "📝 수행평가":
                     else:
                         st.warning(f"{t['task']} → D-{d_day}")
 
-            # ✅ 완료 버튼
             with col2:
                 if not t["done"]:
                     if st.button("완료", key=f"done_{i}"):
@@ -199,7 +211,6 @@ elif menu == "📝 수행평가":
                         save_data(tasks)
                         st.rerun()
 
-            # ❌ 삭제 버튼
             with col3:
                 if st.button("삭제", key=f"del_{i}"):
                     for j in range(len(tasks)):
