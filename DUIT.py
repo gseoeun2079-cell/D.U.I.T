@@ -53,48 +53,44 @@ menu = st.sidebar.radio(
 )
 
 # 1️⃣ 학사 일정 & 급식
-sheet_url = "https://docs.google.com/spreadsheets/d/14b1ZOcAatDx8gP-vFzktP45zHS2A3jR9FuOKKPMVhlM/edit?usp=drivesdk"
+if menu == "📅 학사 일정 & 급식":
 
-# 데이터 불러오기
-df = pd.read_csv(sheet_url)
+    sheet_url = "https://docs.google.com/spreadsheets/d/14b1ZOcAatDx8gP-vFzktP45zHS2A3jR9FuOKKPMVhlM/edit?usp=drivesdk"
 
-# 날짜 선택
-search_date = st.date_input("날짜 선택")
-search_date_str = search_date.strftime("%Y-%m-%d")
+    df = pd.read_csv(sheet_url)
 
-col1, col2 = st.columns(2)
+    search_date = st.date_input("날짜 선택")
+    search_date_str = search_date.strftime("%Y-%m-%d")
 
-# 📌 학사 일정
-with col1:
-    st.markdown("### 📌 학사 일정")
+    col1, col2 = st.columns(2)
 
-    row = df[df["날짜"] == search_date_str]
+    with col1:
+        st.markdown("### 📌 학사 일정")
+        row = df[df["날짜"] == search_date_str]
 
-    if not row.empty:
-        schedule = row["학사일정"].values[0]
-        if schedule == "없음":
+        if not row.empty:
+            schedule = row["학사일정"].values[0]
+            if schedule == "없음":
+                st.info("일정 없음")
+            else:
+                st.info(schedule)
+        else:
             st.info("일정 없음")
+
+    with col2:
+        st.markdown("### 🍱 급식 메뉴")
+
+        if not row.empty:
+            meal = row["급식"].values[0]
+            if meal == "급식 없음":
+                st.success("급식 정보 없음")
+            else:
+                st.success(meal)
         else:
-            st.info(schedule)
-    else:
-        st.info("일정 없음")
-
-# 🍱 급식 메뉴
-with col2:
-    st.markdown("### 🍱 급식 메뉴")
-
-    if not row.empty:
-        meal = row["급식"].values[0]
-        if meal == "급식 없음":
             st.success("급식 정보 없음")
-        else:
-            st.success(meal)
-    else:
-        st.success("급식 정보 없음")
+
 # 2️⃣ 시간표
 elif menu == "🏫 시간표":
-    st.subheader("🏫 시간표")
-
     day = st.selectbox("요일 선택", list(timetable.keys()))
 
     for p, subject in zip(periods, timetable[day]):
