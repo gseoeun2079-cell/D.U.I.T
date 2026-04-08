@@ -226,19 +226,22 @@ elif menu == "📋 스터디 플래너":
     tasks = load_data()
 
     # 입력
-    with st.expander("➕ 할 일 추가"):
-        task = st.text_input("할 일")
-        priority = st.slider("우선순위", 1, 3, 2)
-
-        if st.button("추가"):
-            if task:
-                tasks.append({
-                    "task": task,
-                    "priority": priority,
-                    "done": False
-                })
-                save_data(tasks)
-                st.rerun()
+    with st.expander("➕ 수행평가 추가"):
+        with st.form("task_form"):
+            subject = st.text_input("과목 / 수행평가 이름", key="subject_input")
+            deadline = st.date_input("마감일", key="deadline_input")
+            
+            submitted = st.form_submit_button("추가")
+            if submitted:
+                if subject:
+                    tasks.append({
+                        "task": subject,
+                        "deadline": str(deadline),
+                        "done": False
+                    })
+                    save_data(tasks)
+                    
+                    st.rerun()
 
     # 목록
     st.markdown("### 📌 할 일 목록")
