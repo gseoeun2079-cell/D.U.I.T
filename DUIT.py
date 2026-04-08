@@ -3,16 +3,16 @@ import json
 from datetime import datetime
 import pandas as pd
 
-# 페이지 디자인
+# 페이지 설정
 st.set_page_config(
     page_title="학교 & 개인 일정 관리",
     page_icon="📚",
     layout="centered"
 )
 
-# 데이터 파일
 DATA_FILE = "study_data.json"
 
+# 데이터 저장/불러오기
 def load_data():
     try:
         with open(DATA_FILE, "r") as f:
@@ -23,7 +23,6 @@ def load_data():
 def save_data(data):
     with open(DATA_FILE, "w") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
-
 
 # 데이터
 timetable = {
@@ -52,51 +51,80 @@ menu = st.sidebar.radio(
     ["📅 학사 일정 & 급식", "🏫 시간표", "📝 수행평가", "📋 스터디 플래너"]
 )
 
+# =========================
 # 1️⃣ 학사 일정 & 급식
+# =========================
 if menu == "📅 학사 일정 & 급식":
 
-    sheet_url = "https://docs.google.com/spreadsheets/d/14b1ZOcAatDx8gP-vFzktP45zHS2A3jR9FuOKKPMVhlM/edit?usp=drivesdk"
+    # ✅ CSV 링크로 변경
+    sheet_url = "https://docs.google.com/spreadsheets/d/14b1ZOcAatDx8gP-vFzktP45zHS2A3jR9FuOKKPMVhlM/export?format=csv"
 
-    df = pd.read_csv(sheet_url)
+    try:
+        df = pd.read_csv(sheet_url)
 
+        # ✅ 컬럼 공백 제거
+        df.columns = df.columns.str.strip()
+
+    except:
+        st.error("구글 시트를 불러올 수 없습니다.")
+        st.stop()
+
+    # 날짜 선택
     search_date = st.date_input("날짜 선택")
     search_date_str = search_date.strftime("%Y-%m-%d")
 
     col1, col2 = st.columns(2)
 
+    # 📌 학사 일정
     with col1:
         st.markdown("### 📌 학사 일정")
-        row = df[df["날짜"] == search_date_str]
 
-        if not row.empty:
-            schedule = row["학사일정"].values[0]
-            if schedule == "없음":
-                st.info("일정 없음")
+        if "날짜" in df.columns and "학사일정" in df.columns:
+            row = df[df["날짜"] == search_date_str]
+
+            if not row.empty:
+                schedule = row["학사일정"].values[0]
+                if schedule == "없음":
+                    st.info("일정 없음")
+                else:
+                    st.info(schedule)
             else:
-                st.info(schedule)
+                st.info("일정 없음")
         else:
-            st.info("일정 없음")
+            st.error("시트에 '날짜' 또는 '학사일정' 컬럼이 없습니다")
 
+    # 🍱 급식 메뉴
     with col2:
         st.markdown("### 🍱 급식 메뉴")
 
-        if not row.empty:
-            meal = row["급식"].values[0]
-            if meal == "급식 없음":
-                st.success("급식 정보 없음")
-            else:
-                st.success(meal)
-        else:
-            st.success("급식 정보 없음")
+        if "날짜" in df.columns and "급식" in df.columns:
+            row = df[df["날짜"] == search_date_str]
 
+            if not row.empty:
+                meal = row["급식"].values[0]
+                if meal == "급식 없음":
+                    st.success("급식 정보 없음")
+                else:
+                    st.success(meal)
+            else:
+                st.success("급식 정보 없음")
+        else:
+            st.error("시트에 '급식' 컬럼이 없습니다")
+
+# =========================
 # 2️⃣ 시간표
+# =========================
 elif menu == "🏫 시간표":
+    st.subheader("🏫 시간표")
+
     day = st.selectbox("요일 선택", list(timetable.keys()))
 
     for p, subject in zip(periods, timetable[day]):
-        st.write(f"**{p}**  |  {subject}")
+        st.write(f"**{p}** | {subject}")
 
+# =========================
 # 3️⃣ 수행평가
+# =========================
 elif menu == "📝 수행평가":
     st.subheader("📝 수행평가 D-Day")
 
@@ -113,7 +141,9 @@ elif menu == "📝 수행평가":
         else:
             st.success(f"{subject} → 완료됨")
 
+# =========================
 # 4️⃣ 스터디 플래너
+# =========================
 elif menu == "📋 스터디 플래너":
     st.subheader("📋 공부 계획 관리")
 
