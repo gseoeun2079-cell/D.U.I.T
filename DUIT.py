@@ -68,12 +68,15 @@ if menu == "📅 학사 일정 & 급식":
     except:
         st.error("구글 시트를 불러올 수 없습니다.")
         st.stop()
+        
+        # 날짜 변환
+        df["날짜"] = pd.to_datetime(df["날짜"], errors="coerce")
+        
+        # 날짜 선택
+        search_date = st.date_input("날짜 선택")
+        search_date = pd.to_datetime(search_date)
 
-    # 날짜 선택
-    search_date = st.date_input("날짜 선택")
-    search_date_str = search_date.strftime("%Y-%m-%d")
-
-    col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2)
 
     # 📌 학사 일정
     with col1:
