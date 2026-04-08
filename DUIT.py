@@ -220,7 +220,7 @@ elif menu == "📝 수행평가":
                     save_data(tasks)
                     st.rerun()
 # =========================
-# 4️⃣ 스터디 플래너
+# 📋 스터디 플래너
 # =========================
 elif menu == "📋 스터디 플래너":
     st.subheader("📋 공부 계획 관리")
@@ -296,8 +296,6 @@ elif menu == "📋 스터디 플래너":
             elapsed = (datetime.now() - start_time).seconds
             mins, secs = divmod(elapsed, 60)
             st.info(f"⏱ {t['task']} → {mins:02d}:{secs:02d}")
-
-            st.rerun()
 
     # 진행률
     done = sum(1 for t in tasks if t.get("done"))
