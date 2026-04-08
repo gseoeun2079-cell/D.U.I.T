@@ -155,8 +155,7 @@ elif menu == "📝 수행평가":
                 save_data(tasks)
 
                 # 입력창 초기화
-                st.session_state.subject_input = ""
-                st.session_state.deadline_input = datetime.today()
+                st.rerun()
 
                 st.success("추가 완료!")
                 st.rerun()
