@@ -148,16 +148,17 @@ elif menu == "📝 수행평가":
             
             submitted = st.form_submit_button("추가")
             if submitted:
-                if subject
-                tasks.append({
-                    "task": subject,
-                    "deadline": str(deadline),
-                    "done": False
-                })
-                save_data(tasks)
-
-                st.success("추가 완료!")
-                st.rerun()
+                if subject:
+                    tasks.append({
+                        "task": subject,
+                        "deadline": str(deadline),
+                        "done": False
+                    })
+                    
+                    save_data(tasks)
+                    
+                    st.success("추가 완료!")
+                    st.rerun()
 
     st.markdown("### 📅 수행평가 캘린더")
 
