@@ -295,7 +295,12 @@ elif menu == "📋 스터디 플래너":
             start_time = datetime.strptime(t["start_time"], "%Y-%m-%d %H:%M:%S.%f")
             elapsed = (datetime.now() - start_time).seconds
             mins, secs = divmod(elapsed, 60)
+            
             st.info(f"⏱ {t['task']} → {mins:02d}:{secs:02d}")
+            
+            if st.button("🔄 새로고침", key=f"refresh_{i}"):
+                
+                st.rerun()
 
     # 진행률
     done = sum(1 for t in tasks if t.get("done"))
