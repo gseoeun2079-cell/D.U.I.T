@@ -142,8 +142,8 @@ elif menu == "📝 수행평가":
 
     # ➕ 수행평가 추가
     with st.expander("➕ 수행평가 추가"):
-    subject = st.text_input("과목 / 수행평가 이름")
-    deadline = st.date_input("마감일")
+        subject = st.text_input("과목 / 수행평가 이름")
+        deadline = st.date_input("마감일")
 
     if st.button("추가"):
         if subject:
