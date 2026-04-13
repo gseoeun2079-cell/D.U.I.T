@@ -222,68 +222,65 @@ elif menu == "📝 수행평가":
 # =========================
 # 📋 스터디 플래너
 # =========================
+elif menu == "📋 스터디 플래너":
 
-st.subheader("📋 공부 계획 관리")
+    st.subheader("📋 공부 계획 관리")
 
-tasks = load_data()
+    tasks = load_data()
 
-# ➕ 할 일 추가
-with st.expander("➕ 할 일 추가"):
-    with st.form("plan_form"):
-        task = st.text_input("할 일")
-        priority = st.slider("우선순위", 1, 3, 2)
+    # ➕ 할 일 추가
+    with st.expander("➕ 할 일 추가"):
+        with st.form("plan_form"):
+            task = st.text_input("할 일")
+            priority = st.slider("우선순위", 1, 3, 2)
 
-        submitted = st.form_submit_button("추가")
+            submitted = st.form_submit_button("추가")
 
-        if submitted and task:
-            tasks.append({
-                "task": task,
-                "priority": priority,
-                "done": False,
-                "timer_running": False,
-                "start_time": None
-            })
-            save_data(tasks)
-            st.rerun()
-
-st.markdown("### 📌 할 일 목록")
-
-for i, t in enumerate(tasks):
-    if "priority" not in t:
-        continue
-
-    col1, col2, col3, col4 = st.columns([3,1,1,2])
-
-    # 할 일
-    with col1:
-        if t["done"]:
-            st.write(f"~~{t['task']}~~ ✅")
-        else:
-            st.write(f"{t['task']} (⭐{t['priority']})")
-
-    # 완료
-    with col2:
-        if not t["done"]:
-            if st.button("완료", key=f"done_{i}"):
-                tasks[i]["done"] = True
+            if submitted and task:
+                tasks.append({
+                    "task": task,
+                    "priority": priority,
+                    "done": False,
+                    "timer_running": False,
+                    "start_time": None
+                })
                 save_data(tasks)
                 st.rerun()
 
-    # 삭제
-    with col3:
-        if st.button("삭제", key=f"del_{i}"):
-            tasks.pop(i)
-            save_data(tasks)
-            st.rerun()
+    st.markdown("### 📌 할 일 목록")
 
-# 진행률
-done = sum(1 for t in tasks if t.get("done"))
-total = len([t for t in tasks if "priority" in t])
+    for i, t in enumerate(tasks):
+        if "priority" not in t:
+            continue
 
-st.markdown("### 📊 진행률")
+        col1, col2, col3, col4 = st.columns([3,1,1,2])
 
-if total == 0:
-    st.info("아직 할 일이 없습니다.")
-else:
-    st.progress(done / total)
-    st.write(f"{done} / {total} 완료")
+        with col1:
+            if t["done"]:
+                st.write(f"~~{t['task']}~~ ✅")
+            else:
+                st.write(f"{t['task']} (⭐{t['priority']})")
+
+        with col2:
+            if not t["done"]:
+                if st.button("완료", key=f"done_{i}"):
+                    tasks[i]["done"] = True
+                    save_data(tasks)
+                    st.rerun()
+
+        with col3:
+            if st.button("삭제", key=f"del_{i}"):
+                tasks.pop(i)
+                save_data(tasks)
+                st.rerun()
+
+    done = sum(1 for t in tasks if t.get("done"))
+    total = len([t for t in tasks if "priority" in t])
+
+    st.markdown("### 📊 진행률")
+
+    if total == 0:
+        st.info("아직 할 일이 없습니다.")
+    else:
+        st.progress(done / total)
+        st.write(f"{done} / {total} 완료")
