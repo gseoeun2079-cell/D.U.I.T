@@ -2,6 +2,7 @@ import streamlit as st
 import json
 from datetime import datetime
 import pandas as pd
+from streamlit_autorefresh import st_autorefresh
 
 # 페이지 설정
 st.set_page_config(
@@ -222,7 +223,6 @@ elif menu == "📝 수행평가":
 # =========================
 # 📋 스터디 플래너
 # =========================
-from streamlit_autorefresh import st_autorefresh
 
 st.subheader("📋 공부 계획 관리")
 
