@@ -2,7 +2,6 @@ import streamlit as st
 import json
 from datetime import datetime
 import pandas as pd
-from streamlit_autorefresh import st_autorefresh
 
 # 페이지 설정
 st.set_page_config(
@@ -276,32 +275,6 @@ for i, t in enumerate(tasks):
             tasks.pop(i)
             save_data(tasks)
             st.rerun()
-
-    # 타이머
-    with col4:
-        if not t.get("timer_running", False):
-            if st.button("▶ 시작", key=f"start_{i}"):
-                tasks[i]["timer_running"] = True
-                tasks[i]["start_time"] = str(datetime.now())
-                save_data(tasks)
-                st.rerun()
-        else:
-            if st.button("⏹ 정지", key=f"stop_{i}"):
-                tasks[i]["timer_running"] = False
-                save_data(tasks)
-                st.rerun()
-
-    # ⏱ 타이머 표시 + 자동 갱신
-    if t.get("timer_running") and t.get("start_time"):
-
-        # 👉 실행 중일 때만 자동 새로고침
-        st_autorefresh(interval=1000, key=f"timer_{i}")
-
-        start_time = datetime.strptime(t["start_time"], "%Y-%m-%d %H:%M:%S.%f")
-        elapsed = (datetime.now() - start_time).seconds
-        mins, secs = divmod(elapsed, 60)
-
-        st.info(f"⏱ {t['task']} → {mins:02d}:{secs:02d}")
 
 # 진행률
 done = sum(1 for t in tasks if t.get("done"))
